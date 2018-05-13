@@ -9,7 +9,6 @@ import (
 	"golang.org/x/net/html"
 	"github.com/PuerkitoBio/goquery"
 	"strconv"
-	"sync"
 
 	. "github.com/sbaildon/hn-json/types"
 )
@@ -73,17 +72,8 @@ func parsePosts(html *html.Node, results *Result) {
 
 	element := fmt.Sprintf("%s.%s", FOCUS_ELEMENT, FOCUS_CLASS)
 
-	var wg sync.WaitGroup
-	posts := make(chan Post, 10)
+	posts := make(chan Post)
 	done := make(chan bool)
-
-	doc.Find(element).Find("tbody").Find(".athing").Each(func(i int, s *goquery.Selection) {
-		heading := s.Nodes[0]
-		meta := s.Next().Nodes[0]
-
-		wg.Add(1)
-		go parsePost(heading, meta, posts, &wg)
-	})
 
 	go func() {
 		for {
@@ -97,15 +87,20 @@ func parsePosts(html *html.Node, results *Result) {
 		}
 	}()
 
-	wg.Wait()
+	doc.Find(element).Find("tbody").Find(".athing").Each(func(i int, s *goquery.Selection) {
+		heading := s.Nodes[0]
+		meta := s.Next().Nodes[0]
+
+
+		parsePost(heading, meta, posts)
+	})
+
 	close(posts)
 
 	<-done
 }
 
-func parsePost(headingNode *html.Node, metaNode *html.Node, posts chan Post, wg *sync.WaitGroup) {
-	defer wg.Done()
-
+func parsePost(headingNode *html.Node, metaNode *html.Node, posts chan Post) {
 	heading := &Heading{}
 	parseHeading(headingNode, heading)
 
