@@ -11,16 +11,27 @@ Why? because why not
 ### Go
 
 `go get github.com/sbaildon/hn-json`
-
 `hn-json [--posts int]`
 
 Output is pretty ugly. Consider using a tool such as `jq` for pretty-printing.
 
 `hn-json | jq`
 
+Need Go? https://golang.org/doc/install
+
 ### Docker
 
 `docker build -t hn-json .`
+`docker run -it --rm hn-json [-- --posts int]`
+
+Need docker? https://docs.docker.com/install/
+
+## Libraries
+
+`goquery` is the only non standard library used. Mainly because makes working
+with DOM lookups much simpler than iterating with `html.Tokenizer`. The API
+is pretty robust and enables useful features like filtering, siblings, map
+functions etc.
 
 ## Improvements
 
