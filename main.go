@@ -43,7 +43,9 @@ func main() {
 
 func fetchHN(pageNumber int) *html.Node {
 	req, _ := http.NewRequest("GET", HACKER_NEWS, nil)
-	req.URL.Query().Add("p", strconv.Itoa(pageNumber))
+	query := req.URL.Query()
+	query.Add("p", strconv.Itoa(pageNumber))
+	req.URL.RawQuery = query.Encode()
 
 	client := &http.Client{}
 	res, err := client.Do(req)
