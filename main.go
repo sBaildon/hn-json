@@ -11,6 +11,7 @@ import (
 	"strconv"
 
 	. "github.com/sbaildon/hn-json/types"
+	"github.com/sbaildon/hn-json/validate"
 )
 
 const (
@@ -32,12 +33,20 @@ func main() {
 		panic("Unsupported number of posts")
 	}
 
-	html := fetchHN(1)
 	results := &Result{}
-	parsePosts(html, results)
+
+	/*
+	 * Keep fetching pages until we've got enough posts
+	 * to print
+	 */
+	page := 1
+	for len(results.Posts) <= *postsToPrint {
+		html := fetchHN(page)
+		parsePosts(html, results)
+		page = page+1
+	}
 
 	js, _ := json.Marshal(results.Posts[:*postsToPrint])
-
 	fmt.Println(string(js))
 }
 
@@ -93,7 +102,6 @@ func parsePosts(html *html.Node, results *Result) {
 		heading := s.Nodes[0]
 		meta := s.Next().Nodes[0]
 
-
 		parsePost(heading, meta, posts)
 	})
 
@@ -122,10 +130,19 @@ func parseHeading(headingNode *html.Node, heading *Heading) {
 
 	_rank := reg.ReplaceAllString(element.Find("span.rank").Text(), "")
 	rank, _ := strconv.Atoi(_rank)
+	if valid := validate.Rank(rank); !valid {
+		panic(fmt.Sprintf("invalid rank %d", rank))
+	}
 
 	title := element.Find("a.storylink").Text()
-	uri, _ := element.Find("a.storylink").Attr("href")
+	if valid := validate.Title(title); !valid {
+		panic(fmt.Sprintf("invalid title %s", title))
+	}
 
+	uri, _ := element.Find("a.storylink").Attr("href")
+	if valid := validate.URI(uri); !valid {
+		panic(fmt.Sprintf("invalid uri %s", uri))
+	}
 
 	heading.Rank = rank
 	heading.Title = title
@@ -139,11 +156,23 @@ func parseMeta(metaNode *html.Node, meta *Meta) {
 
 	_points := reg.ReplaceAllString(element.Find("span.score").Text(), "")
 	points, _ := strconv.Atoi(_points)
+	if valid := validate.Points(points); !valid {
+		panic(fmt.Sprintf("invalid points %d", points))
+	}
 
 	author := element.Find("a.hnuser").Text()
+	if valid := validate.Author(author); !valid {
+		// job postings don't have an author, not
+		// sure what the best way to fail is
+		// so set it to an obvious value
+		author = "internal_job_posting"
+	}
 
 	_comments := reg.ReplaceAllString(element.Find("td.subtext").Find("a").Last().Text(), "")
 	comments, _ :=  strconv.Atoi(_comments)
+	if valid := validate.Comments(comments); !valid {
+		panic(fmt.Sprintf("invalid comments %d", comments))
+	}
 
 	meta.Points = points
 	meta.Author = author
