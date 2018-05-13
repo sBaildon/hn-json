@@ -1,6 +1,6 @@
 FROM golang:1.10
 
-WORKDIR /go/src/app
+WORKDIR /go/src/hn-json
 COPY . .
 
 RUN go get -d -v ./...
