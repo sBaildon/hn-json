@@ -50,6 +50,9 @@ func main() {
 	fmt.Println(string(js))
 }
 
+/* Fetches the HN desired HN page, and returns
+ * the entire DOM tree
+ */
 func fetchHN(pageNumber int) *html.Node {
 	req, _ := http.NewRequest("GET", HACKER_NEWS, nil)
 	query := req.URL.Query()
@@ -78,6 +81,14 @@ func fetchHN(pageNumber int) *html.Node {
 	return root
 }
 
+/* Posts are rows in a table, taking the form
+ * row1 -> title
+ * row2 -> meta
+ * row3 -> empty space
+ * To find all posts, we have to look for all ".athing"s
+ * which is the title, then look for the following sibling
+ * to read the metadata
+ */
 func parsePosts(html *html.Node, results *Result) {
 	doc := goquery.NewDocumentFromNode(html)
 
@@ -86,6 +97,9 @@ func parsePosts(html *html.Node, results *Result) {
 	posts := make(chan Post)
 	done := make(chan bool)
 
+	/* Read Posts from channel until it's closed
+	 * by the publisher. Write posts to results
+	 */
 	go func() {
 		for {
 			post, more := <- posts
