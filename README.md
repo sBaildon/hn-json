@@ -4,7 +4,7 @@
 
 Crawls Hacker News, and converts any posts into machine friendly JSON.
 
-Why? because why not
+Why? Why not.
 
 ## Usage
 
@@ -14,7 +14,7 @@ Why? because why not
 
 `hn-json [--posts int]`
 
-Output is pretty ugly. Consider using a tool such as `jq` for pretty-printing.
+Output format is not human friendly. Consider using a tool such as `jq` for pretty-printing.
 
 `hn-json | jq`
 
