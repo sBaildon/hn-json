@@ -22,7 +22,7 @@ const (
 )
 
 var (
-	postsToPrint *int = flag.Int("posts", 30, "How many posts to print")
+	postsToPrint *int = flag.Int("posts", POSTS_PER_PAGE, "How many posts to print")
 )
 
 
